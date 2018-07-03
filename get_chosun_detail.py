@@ -25,12 +25,15 @@ def get(url):
         soup = BeautifulSoup(html, 'html.parser')
 
         article_title = soup.select("#news_title_text_id")
-        print(article_title[0].text)
+        print(article_title)
+        #print(article_title[0].text)
         article_regdate = soup.select(".news_date")
-        print(article_regdate[0].text)
+        print(article_regdate)
+        #print(article_regdate[0].text)
         article_content = soup.select(".par")
+        print(article_content)
         #print(article_content[0].text)
-        if(len(article_content[0].text)>0):
+        if(len(article_content)>0):
             article_sentence_list = article_content[0].text.split(".")
             word_list = ""
 

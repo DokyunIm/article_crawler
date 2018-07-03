@@ -1,6 +1,7 @@
 import requests
 import os
 import time
+import json
 from bs4 import BeautifulSoup
 import get_joongang_detail as get_detail
 
@@ -37,17 +38,18 @@ soup = BeautifulSoup(html, 'html.parser')
 article_link_list = soup.select(".headline > a")
 get_detail.get(article_link_list[0]['href'])
 """
+
 current_dir = os.getcwd()
 if(os.path.isdir(current_dir+"/joongang") == False):
     os.makedirs(current_dir+"/joongang")
 
 fp_result_sentence_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_sentence.csv", mode="w", encoding="utf-8")
 fp_result_article_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_article.csv", mode="w", encoding="utf-8")
-fp_result_freq_word_txt = open(current_dir+"/joongang/"+req_param['Keyword']+"_freq.txt", mode="w", encoding="utf-8")
+fp_result_freq_word_txt = open(current_dir+"/joongang/"+req_param['Keyword']+"_freq.csv", mode="w", encoding="utf-8")
 result_word_list = dict()
 idx = 0
 
-while(idx<=20):
+while(idx<=25):
     idx += 1
     req_param['page'] = str(idx)
     req = requests.get(req_url, headers=req_headers, params=req_param)
@@ -77,7 +79,7 @@ while(idx<=20):
                         fp_result_sentence_csv.write(sentence+"\n")
             time.sleep(3.0)
 
-fp_result_freq_word_txt.write(str(result_word_list))
+fp_result_freq_word_txt.write(json.dumps(result_word_list, ensure_ascii=False))
 
 fp_result_sentence_csv.close()
 fp_result_article_csv.close()

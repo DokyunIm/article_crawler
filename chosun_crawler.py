@@ -2,7 +2,11 @@ import requests
 import os
 from bs4 import BeautifulSoup
 import time
+import json
 import get_chosun_detail as get_detail
+
+
+#get_detail.get("http://news.chosun.com/site/data/html_dir/2018/01/23/2018012300267.html")
 
 
 req_url = "http://search.chosun.com/search/news.search"
@@ -28,11 +32,11 @@ if(os.path.isdir(current_dir+"/chosun") == False):
 
 fp_result_sentence_csv = open(current_dir+"/chosun/"+req_param['query']+"_sentence.csv", mode="w", encoding="utf-8")
 fp_result_article_csv = open(current_dir+"/chosun/"+req_param['query']+"_article.csv", mode="w", encoding="utf-8")
-fp_result_freq_word_txt = open(current_dir+"/chosun/"+req_param['query']+"_freq.txt", mode="w", encoding="utf-8")
+fp_result_freq_word_txt = open(current_dir+"/chosun/"+req_param['query']+"_freq.csv", mode="w", encoding="utf-8")
 result_word_list = dict()
 idx = 0
 
-while(idx<=20):
+while(idx<=25):
     idx += 1
     req_param['pageno'] = str(idx)
     req = requests.get(req_url, headers=req_headers, params=req_param)
@@ -63,7 +67,7 @@ while(idx<=20):
                         fp_result_sentence_csv.write(sentence+"\n")
             time.sleep(3.0)
 
-fp_result_freq_word_txt.write(str(result_word_list))
+fp_result_freq_word_txt.write(json.dumps(result_word_list, ensure_ascii=False))
 
 fp_result_sentence_csv.close()
 fp_result_article_csv.close()
