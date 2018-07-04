@@ -1,12 +1,12 @@
 import requests
 import os
 import time
+import datetime
 import json
 from bs4 import BeautifulSoup
 import get_joongang_detail as get_detail
 
-
-req_url = "http://search.joins.com/TotalNews"
+req_url = "http://search.joins.com/TotalNews" # 요청 URL
 
 req_param = {
     'page': "1",
@@ -15,7 +15,7 @@ req_param = {
     #"StartSearchDate": "06/01/2018 00:00:00",
     #"EndSearchDate": "06/21/2018 00:00:00",
     "SortType": "New",
-    "ScopeType": "Title",
+    "ScopeType": "All",
     "SourceGroupType": "Joongang",
     "SearchCategoryType": "TotalNews"
 }
@@ -27,29 +27,20 @@ req_headers = {
     'Cache-Control': 'max-age=0'
 }
 
-"""
-req = requests.get(req_url, headers=req_headers, params=req_param)
-html = req.text
-header = req.headers
-status = req.status_code
-is_ok = req.ok
-soup = BeautifulSoup(html, 'html.parser')
-#article_link_list = soup.findAll("strong", {"class": "headline mg"})
-article_link_list = soup.select(".headline > a")
-get_detail.get(article_link_list[0]['href'])
-"""
-
-current_dir = os.getcwd()
-if(os.path.isdir(current_dir+"/joongang") == False):
+now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') # 현재시간
+current_dir = os.getcwd() # 현재 디렉토리 경로
+if(os.path.isdir(current_dir+"/joongang") == False): # 폴더 생성
     os.makedirs(current_dir+"/joongang")
 
-fp_result_sentence_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_sentence.csv", mode="w", encoding="utf-8")
-fp_result_article_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_article.csv", mode="w", encoding="utf-8")
-fp_result_freq_word_txt = open(current_dir+"/joongang/"+req_param['Keyword']+"_freq.csv", mode="w", encoding="utf-8")
-result_word_list = dict()
-idx = 0
+fp_word_sentence_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_sentence_word("+str(now)+").csv", mode="w", encoding="utf-8") # 문장 단위 단어
+fp_word_article_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_article("+str(now)+").csv", mode="w", encoding="utf-8") # 기사 단위 단어
+fp_freq_word_json = open(current_dir+"/joongang/"+req_param['Keyword']+"_freq("+str(now)+").json", mode="w", encoding="utf-8") # 단어 빈도수
+fp_sentence_list_csv = open(current_dir+"/joongang/"+req_param['Keyword']+"_sentenct_list("+str(now)+").csv", mode="w", encoding="utf-8") # 문자 리스트
 
-while(idx<=25):
+idx = 0 # 기사 리스트 인덱스
+word_freq = dict() # 단어 빈도수
+
+while(idx<=0):
     idx += 1
     req_param['page'] = str(idx)
     req = requests.get(req_url, headers=req_headers, params=req_param)
@@ -58,65 +49,40 @@ while(idx<=25):
     status = req.status_code
     is_ok = req.ok
     soup = BeautifulSoup(html, 'html.parser')
-    #article_link_list = soup.findAll("strong", {"class": "headline mg"})
     article_link_list = soup.select(".headline > a")
+
     if(len(article_link_list) == 0):
         break
     else:
-        print(len(article_link_list))
+        print("기사 수/페이지 : "+str(len(article_link_list)))
         for link in article_link_list:
             print(link['href'])
-            article_list, sentence_list, word_list = get_detail.get(link['href'])
-            for word in word_list:
-                if (word not in result_word_list):
-                    result_word_list[word] = 1
-                else:
-                    result_word_list[word] += 1
-            if(len(article_list) > 0):
-                fp_result_article_csv.write(article_list+"\n")
+
+            word_article_list, word_sentence_list, word_list, sentence_list = get_detail.get(link['href'])
+
+            if(len(word_article_list)>0):
+                fp_word_article_csv.write(word_article_list+"\n")
+
+            if(len(word_sentence_list)>0):
+                for words in word_sentence_list:
+                    fp_word_sentence_csv.write(words+"\n")
+
+            if(len(word_list)>0):
+                for word in word_list:
+                    if(word not in word_freq):
+                        word_freq[word] = 1
+                    else:
+                        word_freq[word] += 1
+
+            if(len(sentence_list)>0):
                 for sentence in sentence_list:
-                    if(len(sentence)!=0):
-                        fp_result_sentence_csv.write(sentence+"\n")
+                    fp_sentence_list_csv.write(sentence+"\n")
+
             time.sleep(3.0)
 
-fp_result_freq_word_txt.write(json.dumps(result_word_list, ensure_ascii=False))
+fp_freq_word_json.write(json.dumps(word_freq, ensure_ascii=False))
 
-fp_result_sentence_csv.close()
-fp_result_article_csv.close()
-fp_result_freq_word_txt.close()
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-for word in article_word_list:
-    if(word not in word_list):
-        word_list[word] = 1
-    else:
-        word_list[word] += 1
-"""
-
-"""
-sorted_word_list = sorted(word_list.items(), key=operator.itemgetter(1), reverse=True)
-
-fp = open(req_param['Keyword'], "w")
-fp.write(str(word_list))
-
-fp_sorted = open("sorted_"+req_param['Keyword'], "w")
-fp_sorted.write(str(sorted_word_list))
-
-print(word_list)
-print(sorted_word_list)
-fp.close()
-fp_sorted.close()
-"""
-
-
+fp_freq_word_json.close()
+fp_sentence_list_csv.close()
+fp_word_sentence_csv.close()
+fp_word_article_csv.close()
