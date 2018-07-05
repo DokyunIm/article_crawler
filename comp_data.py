@@ -28,14 +28,17 @@ for key, value in cho_freq.items():
     elif key not in joong_freq:
         cho[key] = value
 
-sorted_all_list = sorted(all.items(), key=operator.itemgetter(0), reverse=False)
-sorted_cho_list = sorted(cho.items(), key=operator.itemgetter(0), reverse=False)
-sorted_joong_list = sorted(joong.items(), key=operator.itemgetter(0), reverse=False)
+sorted_all_list = sorted(all.items(), key=operator.itemgetter(1), reverse=True)
+sorted_cho_list = sorted(cho.items(), key=operator.itemgetter(1), reverse=True)
+sorted_joong_list = sorted(joong.items(), key=operator.itemgetter(1), reverse=True)
 
 
-print(sorted_all_list)
-print(sorted_cho_list)
-print(sorted_joong_list)
+for item in sorted_all_list:
+    print(item)
+
+#print(sorted_all_list)
+#print(sorted_cho_list)
+#print(sorted_joong_list)
 
 
 
